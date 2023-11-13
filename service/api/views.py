@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, FastAPI, Request, HTTPException
 from pydantic import BaseModel
 
 from service.api.exceptions import UserNotFoundError
@@ -35,15 +35,28 @@ async def get_reco(
 ) -> RecoResponse:
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
 
-    # Write your code here
-
     if user_id > 10**9:
         raise UserNotFoundError(error_message=f"User {user_id} not found")
 
     k_recs = request.app.state.k_recs
     reco = list(range(k_recs))
+
+    # Write your code here
+    if model_name == "initial_recsys_model":
+        reco = [_ * 3 for _ in range(k_recs)]
+    else:
+        raise HTTPException(status_code=404,
+                            detail="Incorrect model name")
+
     return RecoResponse(user_id=user_id, items=reco)
 
+
+@router.get(
+    path="/hello",
+    tags=["test"]
+)
+async def hello_world() -> str:
+    return "Hello, world!"
 
 def add_views(app: FastAPI) -> None:
     app.include_router(router)
