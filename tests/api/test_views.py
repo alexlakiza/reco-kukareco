@@ -59,7 +59,7 @@ def test_get_reco_for_unknown_user(
     assert response.json()["errors"][0]["error_key"] == "user_not_found"
 
 
-def test_not_found_error(
+def test_model_not_found_error(
     client: TestClient,
 ) -> None:
     """
@@ -79,8 +79,8 @@ def test_not_found_error(
         good_response = client.get(correct_path, headers={
             "Authorization": f"Bearer {valid_token}"})
 
-    assert bad_response.status_code == HTTPStatus.NOT_FOUND
     assert good_response.status_code == HTTPStatus.OK
+    assert bad_response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_authorization_with_any_token(
