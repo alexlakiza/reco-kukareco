@@ -10,6 +10,8 @@ from starlette import status
 from service.api.exceptions import UserNotFoundError
 from service.log import app_logger
 from ..recsys_models.custom_unpickler import load
+from ..recsys_models.models import get_offline_als_recs_for_user, \
+    get_online_als_ann_recs_for_user
 from ..recsys_models.userknn import get_online_recs_for_user, \
     get_offline_recs_for_user
 
@@ -74,6 +76,13 @@ with open("service/recsys_models/10_most_popular_items_20231129.pkl",
           "rb") as f:
     top_10_popular = pickle.load(f)
 
+with open("service/recsys_models/als_factor128_20231205.pkl", "rb") as f:
+    als_factor128_offline_recs = pickle.load(f)
+
+with open("service/recsys_models/als_factor128_ann__model_20231205.pkl",
+          "rb") as f:
+    als_ann_model = pickle.load(f)
+
 
 async def get_current_user(
     auth: Optional[HTTPAuthorizationCredentials] = Depends(get_bearer_token),
@@ -135,6 +144,17 @@ async def get_reco(
             knn_pop_recs_for_all_users=offline_knn_tfidf_recs,
             top_10_pop_items=top_10_popular,
             user_id=user_id)
+    elif model_name == "als_factor128_offline_model":
+        # Lab 4 (Оффлайн предсказания модели ALS)
+        reco = get_offline_als_recs_for_user(top_10_pop_items=top_10_popular,
+                                             user_id=user_id,
+                                             als_ann_recs=als_factor128_offline_recs)
+    elif model_name == "als_f128_ann_online_model":
+        # Lab 4 (Онлайн предсказания модели ALS + ANN)
+        reco = get_online_als_ann_recs_for_user(
+            top_10_pop_items=top_10_popular,
+            user_id=user_id,
+            als_ann_model=als_ann_model)
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
