@@ -11,7 +11,8 @@ from service.api.exceptions import UserNotFoundError
 from service.log import app_logger
 from ..recsys_models.custom_unpickler import load
 from ..recsys_models.models import get_offline_als_recs_for_user, \
-    get_online_als_ann_recs_for_user
+    get_online_als_ann_recs_for_user, get_offline_multivae_recs_for_user, \
+    get_offline_autoencoder_recs_for_user
 from ..recsys_models.userknn import get_online_recs_for_user, \
     get_offline_recs_for_user
 
@@ -82,6 +83,16 @@ with open("service/recsys_models/als_factor128_20231205.pkl", "rb") as f:
 with open("service/recsys_models/als_factor128_ann__model_20231205.pkl",
           "rb") as f:
     als_ann_model = pickle.load(f)
+
+
+# Пиклы из lab5
+with open("service/recsys_models/MultiVAE_recs.pkl",
+          "rb") as f:
+    multivae_recs = pickle.load(f)
+
+with open("service/recsys_models/autoencoder_recs.pkl",
+          "rb") as f:
+    autoencoder_recs = pickle.load(f)
 
 
 async def get_current_user(
@@ -155,6 +166,19 @@ async def get_reco(
             top_10_pop_items=top_10_popular,
             user_id=user_id,
             als_ann_model=als_ann_model)
+    elif model_name == "multivae_offline_model":
+        # Lab 5 (Оффлайн предсказания MultiVAE)
+        reco = get_offline_multivae_recs_for_user(
+            top_10_pop_items=top_10_popular,
+            user_id=user_id,
+            multivae_recs=multivae_recs
+        )
+    elif model_name == "autoencoder_offline_model":
+        reco = get_offline_autoencoder_recs_for_user(
+            top_10_pop_items=top_10_popular,
+            user_id=user_id,
+            autoencoder_recs=autoencoder_recs
+        )
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

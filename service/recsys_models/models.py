@@ -30,8 +30,8 @@ def get_offline_als_recs_for_user(als_recs: Dict,
 
 
 def get_online_als_ann_recs_for_user(als_ann_model,
-                                      top_10_pop_items: List,
-                                      user_id: int) -> List:
+                                     top_10_pop_items: List,
+                                     user_id: int) -> List:
     """
     Функция для подсчета онлайн рекомендаций для пользователя.
     Если пользователь был в датасете, то для него вернется предсказание модели
@@ -49,6 +49,63 @@ def get_online_als_ann_recs_for_user(als_ann_model,
     if user_id in als_ann_model.user_id_map.external_ids:
         reco = als_ann_model.get_item_list_for_user(user_id,
                                                     top_n=10).tolist()
+    else:
+        reco = top_10_pop_items
+
+    return reco
+
+
+def get_offline_multivae_recs_for_user(multivae_recs: Dict,
+                                       top_10_pop_items: List,
+                                       user_id: int) -> List:
+    """
+    Функция для подсчета оффлайн рекомендаций модели MultiVAE для пользователя.
+    Если пользователь был в датасете, то он будет в словаре готовых
+    предсказаний, поэтому в функции производится проверка наличия юзера
+    в словаре `multivae_recs`. Если для пользователя готовы
+    оффлайн рекомендации (он есть в словаре), то возвращаются рекомендации.
+    Если пользователя нет в словаре, то возвращается список 10 самых
+    популярных айтемов из датасета
+
+    :param multivae_recs: Словарь с готовыми рекомендациями
+        (предсказаниями) для всех пользователей из датасета
+    :param top_10_pop_items: Список из 10 самых популярных айтемов
+        из датасета
+    :param user_id: Пользователь,
+        для которого подбираются оффлайн рекомендации
+    :return: Список идентификаторов рекомендованных айтемов
+    """
+    if user_id in multivae_recs:
+        reco = multivae_recs[user_id]
+    else:
+        reco = top_10_pop_items
+
+    return reco
+
+
+def get_offline_autoencoder_recs_for_user(autoencoder_recs: Dict,
+                                          top_10_pop_items: List,
+                                          user_id: int) -> List:
+    """
+     Функция для подсчета оффлайн рекомендаций модели Автоэнкодера
+     для пользователя.
+     Если пользователь был в датасете, то он будет в словаре готовых
+     предсказаний, поэтому в функции производится проверка наличия юзера
+     в словаре `autoencoder_recs`. Если для пользователя готовы
+     оффлайн рекомендации (он есть в словаре), то возвращаются рекомендации.
+     Если пользователя нет в словаре, то возвращается список 10 самых
+     популярных айтемов из датасета
+
+     :param autoencoder_recs: Словарь с готовыми рекомендациями
+         (предсказаниями) для всех пользователей из датасета
+     :param top_10_pop_items: Список из 10 самых популярных айтемов
+         из датасета
+     :param user_id: Пользователь,
+         для которого подбираются оффлайн рекомендации
+     :return: Список идентификаторов рекомендованных айтемов
+     """
+    if user_id in autoencoder_recs:
+        reco = autoencoder_recs[user_id]
     else:
         reco = top_10_pop_items
 
